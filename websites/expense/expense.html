@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense Tracker</title>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Google Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
+  <!-- Chart.js for Visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="expense.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <i class="fa-solid fa-wallet brand-icon"></i>
+        <div>
+          <h1>Expense Tracker</h1>
+          <p class="subtitle">Track, analyze, and manage your daily spending</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="btn btn-secondary btn-icon" title="Toggle Theme">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <button id="loadSampleBtn" class="btn btn-secondary">
+          <i class="fa-solid fa-database"></i> Load Sample Data
+        </button>
+      </div>
+    </header>
+
+    <!-- Financial Metrics Cards -->
+    <section class="summary-cards">
+      <div class="card summary-card balance-card">
+        <div class="card-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+        <div class="card-info">
+          <span class="card-label">Total Balance</span>
+          <h2 id="totalBalance">$0.00</h2>
+          <span class="badge badge-neutral" id="balanceStatus">Balanced</span>
+        </div>
+      </div>
+
+      <div class="card summary-card income-card">
+        <div class="card-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
+        <div class="card-info">
+          <span class="card-label">Total Income</span>
+          <h2 id="totalIncome">$0.00</h2>
+          <span class="badge badge-success" id="incomeCount">0 transactions</span>
+        </div>
+      </div>
+
+      <div class="card summary-card expense-card">
+        <div class="card-icon"><i class="fa-solid fa-arrow-trend-down"></i></div>
+        <div class="card-info">
+          <span class="card-label">Total Expenses</span>
+          <h2 id="totalExpense">$0.00</h2>
+          <span class="badge badge-danger" id="expenseCount">0 transactions</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Layout -->
+    <div class="main-grid">
+      <!-- Left Column: Form & Chart -->
+      <div class="left-column">
+        <!-- New Transaction Form -->
+        <div class="card form-card">
+          <h2 class="section-title"><i class="fa-solid fa-circle-plus"></i> Add New Transaction</h2>
+          <form id="transactionForm">
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="title">Description</label>
+                <input type="text" id="title" placeholder="e.g., Groceries, Salary, Coffee" required />
+              </div>
+              <div class="form-group flex-1">
+                <label for="amount">Amount ($)</label>
+                <input type="number" id="amount" step="0.01" min="0.01" placeholder="0.00" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="type">Type</label>
+                <select id="type" required>
+                  <option value="expense">Expense</option>
+                  <option value="income">Income</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category" required>
+                  <!-- Populated via JavaScript -->
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" required />
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fa-solid fa-plus"></i> Add Transaction
+            </button>
+          </form>
+        </div>
+
+        <!-- Expense Chart Card -->
+        <div class="card chart-card">
+          <div class="card-header">
+            <h2 class="section-title"><i class="fa-solid fa-chart-pie"></i> Expense Breakdown</h2>
+          </div>
+          <div class="chart-container">
+            <canvas id="categoryChart"></canvas>
+            <div id="noChartData" class="no-data-msg hidden">No expense data for chart</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Filters & List -->
+      <div class="right-column">
+        <div class="card list-card">
+          <div class="list-header">
+            <h2 class="section-title"><i class="fa-solid fa-list-check"></i> Transactions History</h2>
+            <button id="clearAllBtn" class="btn btn-danger-outline btn-sm">
+              <i class="fa-solid fa-trash-can"></i> Clear All
+            </button>
+          </div>
+
+          <!-- Filters Section -->
+          <div class="filters-panel">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass search-icon"></i>
+              <input type="text" id="searchInput" placeholder="Search transactions..." />
+            </div>
+
+            <div class="filter-controls">
+              <div class="filter-group">
+                <label for="filterCategory"><i class="fa-solid fa-filter"></i> Category</label>
+                <select id="filterCategory">
+                  <option value="all">All Categories</option>
+                  <option value="income-all">-- All Income --</option>
+                  <option value="expense-all">-- All Expenses --</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label for="filterDateFrom">From</label>
+                <input type="date" id="filterDateFrom" />
+              </div>
+
+              <div class="filter-group">
+                <label for="filterDateTo">To</label>
+                <input type="date" id="filterDateTo" />
+              </div>
+
+              <button id="resetFiltersBtn" class="btn btn-secondary btn-sm filter-reset-btn" title="Reset Filters">
+                <i class="fa-solid fa-rotate-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Transaction List -->
+          <div class="transaction-list-container">
+            <ul id="transactionList" class="transaction-list">
+              <!-- Rendered dynamically -->
+            </ul>
+            <div id="emptyState" class="empty-state hidden">
+              <i class="fa-solid fa-receipt empty-icon"></i>
+              <p class="empty-title">No transactions found</p>
+              <p class="empty-sub">Try adjusting your filters or add a new entry above.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom JavaScript -->
+  <script src="expense.js"></script>
+</body>
+</html>
