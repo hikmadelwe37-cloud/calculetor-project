@@ -1,12 +1,16 @@
-const express = require("express");
-const path = require("path");
-
+const express = require('express');
+const path = require('path');
 const app = express();
-const PORT = process.env.PORT || 333;
 
-// Serve static front-end assets
-app.use(express.static(path.join(__dirname, "public")));
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+// Serve index.html at the root URL
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
